@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="A feature-rich to-do list app with calendar, categories, dark mode, and more.">
+    <meta name="author" content="Your Name">
+    <title>Advanced To-Do List</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #ff9a9e, #fad0c4);
+            padding: 20px;
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+        .dark-mode { background: linear-gradient(135deg, #232526, #414345); color: white; }
+        .blue-theme { background: linear-gradient(135deg, #2193b0, #6dd5ed); color: #1A237E; }
+        .green-theme { background: linear-gradient(135deg, #56ab2f, #a8e063); color: #222; }
+        .neon-theme { background: linear-gradient(135deg, #12c2e9, #c471ed, #f64f59); color: #fff; }
+        .midnight-theme { background: linear-gradient(135deg, #2c3e50, #4ca1af); color: #fff; }
+        .cyberpunk-theme { background: linear-gradient(135deg, #ff00ff, #00ffff); color: #000; }
+        .sunset-theme { background: linear-gradient(135deg, #ff7e5f, #feb47b); color: #222; }
+        .forest-theme { background: linear-gradient(135deg, #5a3f37, #2c7744); color: #fff; }
+        .ocean-theme { background: linear-gradient(135deg, #1e3c72, #2a5298); color: #fff; }
+        .pastel-theme { 
+    background: linear-gradient(135deg, #FFDEE9, #B5FFFC); /* Soft pink to aqua gradient */
+    color: #333; 
+}
+        .solarized-theme { background: linear-gradient(135deg, #002b36, #073642); color: #fff; }
+
+        .dark-mode .container, .dark-mode .task-list, .dark-mode .task-item { background: #333; color: white; }
+        .blue-theme .container, .blue-theme .task-list, .blue-theme .task-item { background: #1b6ca8; color: white; }
+        .green-theme .container, .green-theme .task-list, .green-theme .task-item { background: #88c070; color: black; }
+        .neon-theme .container, .neon-theme .task-list, .neon-theme .task-item { background: #6a0572; color: white; }
+        .midnight-theme .container, .midnight-theme .task-list, .midnight-theme .task-item { background: #34495e; color: white; }
+        .cyberpunk-theme .container, .cyberpunk-theme .task-list, .cyberpunk-theme .task-item { background: #111; color: cyan; }
+        .sunset-theme .container, .sunset-theme .task-list, .sunset-theme .task-item { background: #ff9966; color: black; }
+        .forest-theme .container, .forest-theme .task-list, .forest-theme .task-item { background: #3a5a40; color: white; }
+        .ocean-theme .container, .ocean-theme .task-list, .ocean-theme .task-item { background: #294a7d; color: white; }
+        .pastel-theme .container, .pastel-theme .task-list, .pastel-theme .task-item { background: #FFE3E3; color: #3A3A3A; }
+        .solarized-theme .container, .solarized-theme .task-list, .solarized-theme .task-item { background: #002b36; color: white; }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            position: relative;
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+        #listsContainer {
+            transition: background 0.3s ease, color 0.3s ease;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        .dark-mode #listsContainer { background: #2a2a2a; color: white; }
+        .blue-theme #listsContainer { background: #155a8a; color: white; }
+        .green-theme #listsContainer { background: #4a8c4a; color: black; }
+        .neon-theme #listsContainer { background: #530d5c; color: white; }
+        .midnight-theme #listsContainer { background: #283747; color: white; }
+        .cyberpunk-theme #listsContainer { background: #222; color: cyan; }
+        .sunset-theme #listsContainer { background: #e6735c; color: black; }
+        .forest-theme #listsContainer { background: #2e4b33; color: white; }
+        .ocean-theme #listsContainer { background: #1c3a63; color: white; }
+        .pastel-theme #listsContainer { background: #FFC7C7; color: black; }
+        .solarized-theme #listsContainer { background: #01303d; color: white; }
+
+        .dark-mode .container {
+            background: #333;
+            color: white;
+        }
+        .theme-toggle {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 20px;
+            cursor: pointer;
+            background: none;
+            border: none;
+        }
+        h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+        .dashboard {
+            margin-bottom: 20px;
+        }
+        .search-bar {
+            margin-bottom: 15px;
+        }
+        input, select {
+            padding: 12px;
+            border: 2px solid #ccc;
+            border-radius: 6px;
+            font-size: 16px;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        button {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            cursor: pointer;
+            border-radius: 6px;
+            font-size: 16px;
+            transition: background 0.3s ease;
+        }
+        
+        .task-list {
+            list-style: none;
+            padding: 0;
+        }
+        .task-item {
+            background:rgba(255, 255, 255, 0.9);
+            padding: 12px;
+            margin: 8px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 8px;
+            font-size: 18px;
+            transition: transform 0.3s, background 0.3s;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            flex-wrap: wrap;
+            font-weight: 700;
+        }
+        /* Default hover effect */
+        .task-item input {
+            transition: all 0.2s ease-in-out;
+    background-color: white;
+    border: 2px solid #4CAF50; /* Green outline */
+    border-radius: 5px;
+    padding: 5px;
+    font-size: 16px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    transition: width 0.3s ease, opacity 0.3s ease;
+
+}
+
+.task-item:hover {
+    transform: scale(1.02);
+    transition: 0.3s ;
+    cursor: pointer;
+    font-weight: 750;
+}
+
+/* Themed hover effects */
+.dark-mode .task-item:hover { background: #444; color: #ddd; }
+.blue-theme .task-item:hover { background: #227bbd; color: #fff; }
+.green-theme .task-item:hover { background: #76b657; color: black; }
+.neon-theme .task-item:hover { background: #7a1a88; color: #fff; }
+.midnight-theme .task-item:hover { background: #3b5c76; color: white; }
+.cyberpunk-theme .task-item:hover { background: #080808; color: magenta; }
+.sunset-theme .task-item:hover { background: #ff7f50; color: black; }
+.forest-theme .task-item:hover { background: #4b7748; color: white; }
+.ocean-theme .task-item:hover { background: #3261a8; color: white; }
+.pastel-theme .task-item:hover { background: #FFA8A8; color: black; }
+.solarized-theme .task-item:hover { background: #013c4a; color: white; }
+
+ 
+
+        .task-actions {
+            display: flex;
+            gap: 5px;
+        }
+        .list-heading {
+            text-align: left;
+            margin-top: 20px;
+            font-size: 22px;
+            font-weight: bold;
+            padding-left: 10px; /* Adjust for alignment */
+        }
+        .tick {
+            cursor: pointer;
+            border: none;
+            background: none;
+            padding: 6px;
+            border-radius: 3px;
+            transition: background 0.3s ease;
+            font-size: 1.2em;
+            margin-left: auto;
+            margin-right: 20%;
+
+        }
+        .completed span {
+    position: relative;
+    opacity: 0.7;
+}
+
+/* Strikethrough line with dynamic color */
+.completed span::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 50%;
+    width: 100%;
+    height: 2px;
+    transform: translateY(-50%);
+}
+
+#removeAll:hover {
+    background-color: #cc0000; /* Darker red on hover */
+}
+
+
+/* Apply different colors based on theme */
+.dark-mode .completed span::after { background-color: white; }
+.blue-theme .completed span::after { background-color: white; }
+.green-theme .completed span::after { background-color: black; }
+.neon-theme .completed span::after { background-color: white; }
+.midnight-theme .completed span::after { background-color: white; }
+.cyberpunk-theme .completed span::after { background-color: cyan; }
+.sunset-theme .completed span::after { background-color: black; }
+.forest-theme .completed span::after { background-color: white; }
+.ocean-theme .completed span::after { background-color: white; }
+.pastel-theme .completed span::after { background-color: black; }
+.solarized-theme .completed span::after { background-color: white; }
+
+.todo-input-container {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#todoInput {
+    width: 0;
+    opacity: 0;
+    padding: 10px;
+    border: 2px solid #4CAF50;
+    border-radius: 5px;
+    margin-right: 10px;
+    transition: width 0.5s ease-in-out, opacity 0.5s ease-in-out;
+    overflow: hidden;
+    direction: ltr; 
+}
+
+/* Active input style (expands smoothly) */
+.show-input {
+    width: 300px !important;
+    opacity: 1 !important;
+    direction: rtl; 
+}
+
+
+        .delete, .edit {
+            border: none;
+            padding: 6px;
+            cursor: pointer;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        .delete { background: red; color: white; }
+        .edit { background: #ffc107; color: white; }
+        .sortable-ghost {
+    opacity: 0.6;
+    background: #ddd;
+}
+#removeAll {
+    display: none; /* Initially hidden */
+    background-color: #4CAF50; /* Red color */
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    margin: 20px auto; /* Centering */
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+    display: block;
+    text-align: center;
+}
+
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <button class="theme-toggle" id="themeToggle">🎨</button>
+        <h1>Stay Organized with Your Tasks</h1>
+        <div class="dashboard">
+            <div class="search-bar">
+                <input type="text" id="searchInput" placeholder="Find Your Tasks...">
+            </div>
+            <div class="todo-input-container">
+                <input type="text" id="todoInput" placeholder="Enter Your Tasks...">
+                <button id="createList">Add a New Task</button>
+            </div>
+        
+        </div>
+        <h2 class="list-heading">Manage Your Tasks</h2>
+        <div id="listsContainer"></div>
+        <button id="removeAll" style="display: none;">Remove All</button>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const listsContainer = document.getElementById("listsContainer");
+            const createListButton = document.getElementById("createList");
+            const searchInput = document.getElementById("searchInput");
+            const todoInput = document.getElementById("todoInput");
+            const removeAllButton = document.getElementById("removeAll");
+            new Sortable(listsContainer, {
+            animation: 200, // Smooth animation
+            ghostClass: "sortable-ghost", // Class for dragging
+            onEnd: function() {
+                saveLists(); // Save new order in local storage
+            }
+            });
+
+
+
+            function loadLists() {
+                const savedLists = JSON.parse(localStorage.getItem("todoLists")) || [];
+                listsContainer.innerHTML = ""; // Clear before loading
+                savedLists.forEach(({ name, completed }) => addListToDOM(name, completed));
+                updateRemoveAllButton(); 
+            }
+
+            function saveLists() {
+                const lists = Array.from(document.querySelectorAll(".task-item")).map(item => ({
+                    name: item.querySelector("span").textContent,
+                    completed: item.classList.contains("completed")
+                }));
+                localStorage.setItem("todoLists", JSON.stringify(lists));
+            }
+            
+            function addListToDOM(listName, completed = false) {
+                const div = document.createElement("div");
+                div.classList.add("task-item");
+                if (completed) div.classList.add("completed");
+
+                div.innerHTML = `
+                    <span class="task-text">${listName}</span> 
+                    <button class='tick'>${completed ? "✅" : "⬜"}</button>
+                    <button class='delete'>X</button>
+                `;
+                listsContainer.appendChild(div);
+                updateRemoveAllButton();    
+                const taskText = div.querySelector(".task-text");       
+                taskText.addEventListener("dblclick", function () {
+                    const input = document.createElement("input");
+                    input.type = "text";
+                    input.value = taskText.textContent;
+                    input.classList.add("edit-input");
+                    taskText.replaceWith(input);
+                    input.focus();        
+                    let isEditing = true; // Prevent multiple triggers
+
+                    function saveEdit() {
+                        if (!isEditing) return; // Avoid duplicate calls
+                        isEditing = false;
+                    
+                        if (input.value.trim()) {
+                            taskText.textContent = input.value.trim();
+                        }
+                        input.replaceWith(taskText);
+                        saveLists();
+                    }
+                    input.addEventListener("blur", saveEdit);
+                    input.addEventListener("keypress", function (event) {
+                        if (event.key === "Enter") {
+                            input.removeEventListener("blur", saveEdit); // Prevent duplicate execution
+                            saveEdit();
+                        }
+                    });
+                });
+
+                div.querySelector(".tick").addEventListener("click", function () {
+                    div.classList.toggle("completed");
+                    this.textContent = div.classList.contains("completed") ? "✅" : "⬜";
+                    saveLists();
+                });
+
+                div.querySelector(".delete").addEventListener("click", function () {
+                    div.remove();
+                    saveLists();
+                    updateRemoveAllButton(); 
+                });
+            }
+            function updateRemoveAllButton() {
+                removeAllButton.style.display = listsContainer.children.length > 5 ? "block" : "none";
+            }
+
+            
+    
+            createListButton.addEventListener("click", function() {
+                if (!todoInput.classList.contains("show-input")) {
+                    // Show input field
+                    todoInput.classList.add("show-input");
+                    todoInput.focus();
+                    createListButton.textContent = "Add";  
+                } else if (todoInput.value.trim()) { 
+                    // Add task to the list
+                    addListToDOM(todoInput.value.trim());
+                    saveLists();
+                    todoInput.value = "";
+                
+                    // Reset button text after adding
+
+                }
+            });
+
+
+
+            todoInput.addEventListener("keypress", function(event) {
+                if (event.key === "Enter" && this.value.trim()) {
+                    addListToDOM(this.value.trim());
+                    saveLists();
+                    this.value = "";
+
+                }
+            });
+
+            // Hide input if it's empty and loses focus
+            todoInput.addEventListener("blur", function() {
+                setTimeout(() => {
+                    if (!this.value.trim()) {
+                        this.classList.remove("show-input");
+                        createListButton.textContent = "Add a New Task";
+                    }
+                }, 200); // Slight delay to prevent immediate hiding
+            });
+
+            let idleTimer;
+
+            function resetIdleTimer() {
+                clearTimeout(idleTimer);
+                idleTimer = setTimeout(() => {
+                    if (!todoInput.value.trim()) {
+                        todoInput.classList.remove("show-input");
+                        createListButton.textContent = "Add a New Task";
+                    }
+                }, 10000); // 10 seconds of inactivity
+            }
+            document.addEventListener("mousemove", resetIdleTimer);
+            document.addEventListener("keypress", resetIdleTimer);
+            document.addEventListener("scroll", resetIdleTimer);
+            document.addEventListener("click", resetIdleTimer);
+
+
+
+            searchInput.addEventListener("input", function() {
+                const searchValue = this.value.toLowerCase();
+                document.querySelectorAll(".task-item").forEach(item => {
+                    item.style.display = item.textContent.toLowerCase().includes(searchValue) ? "flex" : "none";
+                });
+            });
+            removeAllButton.addEventListener("click", function() {
+        listsContainer.innerHTML = "";
+        localStorage.removeItem("todoLists"); // Clear local storage
+        updateRemoveAllButton(); // Hide button
+    });
+
+
+            loadLists();
+        });
+
+        // Theme handling
+        const themes = ["dark-mode", "blue-theme", "green-theme", "neon-theme", "midnight-theme", "cyberpunk-theme", "sunset-theme", "forest-theme", "ocean-theme", "pastel-theme", "solarized-theme"];
+        let currentThemeIndex = localStorage.getItem("selectedThemeIndex") ? parseInt(localStorage.getItem("selectedThemeIndex")) : -1;
+        
+        function applyTheme(index) {
+            document.body.classList.remove(...themes);
+            document.body.classList.add(themes[index]);
+            localStorage.setItem("selectedThemeIndex", index);
+        }
+        
+        if (currentThemeIndex >= 0) {
+            applyTheme(currentThemeIndex);
+        }
+        
+        document.getElementById("themeToggle").addEventListener("click", function() {
+            currentThemeIndex = (currentThemeIndex + 1) % themes.length;
+            applyTheme(currentThemeIndex);
+        });
+
+
+    </script>
+</body>
+</html>
